@@ -164,7 +164,6 @@ client.once("ready", async () => {
     {
       name: "premium-redeem",
       description: "Redeem kode premium untuk server ini",
-      defaultMemberPermissions: PermissionFlagsBits.Administrator,
       options: [
         {
           name: "kode",
@@ -295,14 +294,6 @@ client.on("interactionCreate", async (interaction) => {
       if (!guild) {
         await interaction.reply({
           content: "Command ini cuma bisa dipakai di server, bukan DM.",
-          ephemeral: true,
-        });
-        return;
-      }
-
-      if (!interaction.memberPermissions.has(PermissionFlagsBits.Administrator)) {
-        await interaction.reply({
-          content: "Hanya admin server yang bisa redeem kode.",
           ephemeral: true,
         });
         return;
