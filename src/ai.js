@@ -77,13 +77,13 @@ async function handleAiCommand(interaction, { apiKey, ownerId }) {
     const aiMessageRaw =
       data.choices?.[0]?.message?.content || "AI tidak mengembalikan jawaban.";
 
-    // Bersihkan newline berlebih supaya jawaban tidak terlihat "banyak enter" di Discord
-    const aiMessageClean = aiMessageRaw.replace(/\s+/g, " ").trim();
-
     const maxLen = 2000;
-    const fullMessage = `**Prompt:** ${prompt}\n**Jawaban:** ${aiMessageClean}`;
+    const header = `**Prompt:**\n${prompt}\n\n**Jawaban:**\n`;
+    const remaining = maxLen - header.length;
+    const safeRemaining = remaining > 0 ? remaining : 0;
+    const answerTruncated = aiMessageRaw.slice(0, safeRemaining);
 
-    await interaction.editReply(fullMessage.slice(0, maxLen));
+    await interaction.editReply(header + answerTruncated);
   } catch (err) {
     console.error("Error panggil OpenRouter:", err);
     await interaction.editReply(
