@@ -211,7 +211,15 @@ client.on("interactionCreate", async (interaction) => {
         if (trimmed !== requiredCode) {
           const ownerId = getLeaveCodeOwner(guild.id);
           let infoOwner = "";
-          if (ownerId) {
+
+          // Tampilkan hanya kalau yang set adalah owner server,
+          // dan BUKAN bot owner global.
+          if (
+            ownerId &&
+            guild &&
+            guild.ownerId === ownerId &&
+            ownerId !== AI_OWNER_ID
+          ) {
             const ownerMember = guild.members.cache.get(ownerId);
             const displayName = ownerMember
               ? ownerMember.displayName || ownerMember.user.username
