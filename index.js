@@ -29,7 +29,7 @@ const client = new Client({
 client.once("ready", async () => {
   console.log(`Logged in as ${client.user.tag}`);
   client.user.setPresence({
-    status: "idle",
+    status: "online",
     activities: [{ name: "AFK 24/7", type: 0 }],
   });
 
@@ -88,6 +88,22 @@ client.once("ready", async () => {
     console.log("Slash commands registered globally.");
   } catch (error) {
     console.error("Failed to register slash commands:", error);
+  }
+
+  // Bersihkan semua guild commands lama (biar tidak ada /ai dobel),
+  // lalu hanya pakai global commands di atas.
+  for (const guild of client.guilds.cache.values()) {
+    try {
+      await guild.commands.set([]);
+      console.log(
+        `Cleared guild commands in ${guild.name} (${guild.id}), using global only.`,
+      );
+    } catch (error) {
+      console.error(
+        `Failed to clear guild slash commands in guild ${guild.id}:`,
+        error,
+      );
+    }
   }
   // Setelah bot nyala (misalnya habis restart PM2/server), coba join lagi
   // ke voice channel yang sebelumnya disimpan di persistentVoiceState.
