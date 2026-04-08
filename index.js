@@ -322,7 +322,7 @@ client.on("interactionCreate", async (interaction) => {
           ephemeral: false,
         });
       }
-    } else if (interaction.commandName === "ai") {
+    } else if (interaction.commandName === "chat-ai") {
       await handleAiCommand(interaction, {
         apiKey: OPENROUTER_API_KEY,
         ownerId: AI_OWNER_ID,
