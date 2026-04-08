@@ -1,8 +1,8 @@
 const fetch = require("node-fetch");
 
 const aiCommandDefinition = {
-  name: "ai",
-  description: "Tanya AI (OpenRouter)",
+  name: "chat-ai",
+  description: "Tanya AI",
   options: [
     {
       name: "prompt",

@@ -79,28 +79,29 @@ client.once("ready", async () => {
     {
       ...aiCommandDefinition,
       // Semua member di server bisa pakai /ai.
+      // Tidak ada default_member_permissions -> default: semua member.
       dm_permission: false,
     },
   ];
 
   try {
-    await client.application.commands.set(commands);
-    console.log("Slash commands registered globally.");
+    // Bersihkan dulu semua global commands lama supaya tidak ada definisi sisa.
+    await client.application.commands.set([]);
+    console.log("Cleared global slash commands.");
   } catch (error) {
-    console.error("Failed to register slash commands:", error);
+    console.error("Failed to clear global slash commands:", error);
   }
-
-  // Bersihkan semua guild commands lama (biar tidak ada /ai dobel),
-  // lalu hanya pakai global commands di atas.
+  // Daftarkan commands sebagai guild commands di setiap server;
+  // ini yang dipakai Discord untuk menu / di guild tersebut.
   for (const guild of client.guilds.cache.values()) {
     try {
-      await guild.commands.set([]);
+      await guild.commands.set(commands);
       console.log(
-        `Cleared guild commands in ${guild.name} (${guild.id}), using global only.`,
+        `Slash commands registered in guild ${guild.name} (${guild.id}).`,
       );
     } catch (error) {
       console.error(
-        `Failed to clear guild slash commands in guild ${guild.id}:`,
+        `Failed to register slash commands in guild ${guild.id}:`,
         error,
       );
     }
