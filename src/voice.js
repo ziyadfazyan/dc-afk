@@ -36,7 +36,7 @@ function saveVoiceState(data) {
   }
 }
 
-// guildId -> { channelId }
+// guildId -> { channelId, leaveCode?, leaveCodeOwnerId? }
 const persistentVoiceState = loadVoiceState();
 
 // Map guildId -> { connection, player, channelId }
@@ -92,8 +92,13 @@ function connectToVoice(guild, channel) {
     const state = { connection, player, channelId: channel.id };
     voiceStates.set(guild.id, state);
 
-    // Simpan ke file supaya setelah restart bisa auto join lagi
-    persistentVoiceState[guild.id] = { channelId: channel.id };
+    // Simpan ke file supaya setelah restart bisa auto join lagi.
+    // Pertahankan leaveCode kalau sudah ada.
+    const prev = persistentVoiceState[guild.id] || {};
+    persistentVoiceState[guild.id] = {
+      ...prev,
+      channelId: channel.id,
+    };
     saveVoiceState(persistentVoiceState);
 
     console.log(
@@ -148,9 +153,37 @@ function clearPersistentVoiceForGuild(guildId) {
   }
 }
 
+function setLeaveCode(guildId, code, ownerId) {
+  const current = persistentVoiceState[guildId] || {};
+  if (code && code.trim()) {
+    current.leaveCode = code.trim();
+    if (ownerId && String(ownerId).trim()) {
+      current.leaveCodeOwnerId = String(ownerId).trim();
+    }
+  } else {
+    delete current.leaveCode;
+    delete current.leaveCodeOwnerId;
+  }
+  persistentVoiceState[guildId] = current;
+  saveVoiceState(persistentVoiceState);
+}
+
+function getLeaveCode(guildId) {
+  const current = persistentVoiceState[guildId];
+  return current && current.leaveCode;
+}
+
+function getLeaveCodeOwner(guildId) {
+  const current = persistentVoiceState[guildId];
+  return current && current.leaveCodeOwnerId;
+}
+
 module.exports = {
   voiceStates,
   connectToVoice,
   autoReconnect,
   clearPersistentVoiceForGuild,
+  setLeaveCode,
+  getLeaveCode,
+  getLeaveCodeOwner,
 };

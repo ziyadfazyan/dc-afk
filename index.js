@@ -7,6 +7,9 @@ const {
   connectToVoice,
   autoReconnect,
   clearPersistentVoiceForGuild,
+  setLeaveCode,
+  getLeaveCode,
+  getLeaveCodeOwner,
 } = require("./src/voice");
 const { aiCommandDefinition, handleAiCommand } = require("./src/ai");
 
@@ -34,10 +37,28 @@ client.once("ready", async () => {
     {
       name: "afk-join",
       description: "Make the bot join your current voice channel and AFK",
+      options: [
+        {
+          name: "kode",
+          description:
+            "Kode opsional. Kalau diisi, nanti /afk-leave butuh kode yang sama.",
+          type: 3, // STRING
+          required: false,
+        },
+      ],
     },
     {
       name: "afk-leave",
       description: "Disconnect the bot from the voice channel",
+      options: [
+        {
+          name: "kode",
+          description:
+            "Kalau /afk-join sebelumnya pakai kode, isi kode yang sama di sini.",
+          type: 3, // STRING
+          required: false,
+        },
+      ],
     },
     {
       name: "premium-redeem",
@@ -151,6 +172,9 @@ client.on("interactionCreate", async (interaction) => {
         return;
       }
 
+      const kodeJoin = interaction.options.getString("kode");
+      setLeaveCode(guild.id, kodeJoin || "", interaction.user.id);
+
       connectToVoice(guild, voiceChannel);
       await interaction.reply({
         content: `Aku join ke **${voiceChannel.name}** dan AFK di sini.`,
@@ -165,6 +189,44 @@ client.on("interactionCreate", async (interaction) => {
           ephemeral: false,
         });
         return;
+      }
+
+      const requiredCode = getLeaveCode(guild.id);
+      const isServerOwner = guild && guild.ownerId === interaction.user.id;
+      const isBotOwner = interaction.user.id === AI_OWNER_ID;
+
+      if (requiredCode && !isServerOwner && !isBotOwner) {
+        const inputCode = interaction.options.getString("kode");
+        const trimmed = inputCode && inputCode.trim();
+
+        if (!trimmed) {
+          await interaction.reply({
+            content:
+              "Channel AFK di server ini dikunci dengan kode. Gunakan /afk-leave dengan parameter `kode` yang benar.",
+            ephemeral: true,
+          });
+          return;
+        }
+
+        if (trimmed !== requiredCode) {
+          const ownerId = getLeaveCodeOwner(guild.id);
+          let infoOwner = "";
+          if (ownerId) {
+            const ownerMember = guild.members.cache.get(ownerId);
+            const displayName = ownerMember
+              ? ownerMember.displayName || ownerMember.user.username
+              : null;
+            infoOwner = displayName
+              ? ` Kode ini diset oleh **${displayName}** (<@${ownerId}>).`
+              : ` Kode ini diset oleh <@${ownerId}>.`;
+          }
+
+          await interaction.reply({
+            content: `Kode yang kamu masukkan salah.${infoOwner}`,
+            ephemeral: true,
+          });
+          return;
+        }
       }
 
       try {
