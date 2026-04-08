@@ -74,16 +74,16 @@ async function handleAiCommand(interaction, { apiKey, ownerId }) {
     }
 
     const data = await response.json();
-    const aiMessage =
+    const aiMessageRaw =
       data.choices?.[0]?.message?.content || "AI tidak mengembalikan jawaban.";
 
-    const maxLen = 2000;
-    const header = `**Prompt:** ${prompt}\n\n**Jawaban:**\n`;
-    const remaining = maxLen - header.length;
-    const safeRemaining = remaining > 0 ? remaining : 0;
-    const answerTruncated = aiMessage.slice(0, safeRemaining);
+    // Bersihkan newline berlebih supaya jawaban tidak terlihat "banyak enter" di Discord
+    const aiMessageClean = aiMessageRaw.replace(/\s+/g, " ").trim();
 
-    await interaction.editReply(header + answerTruncated);
+    const maxLen = 2000;
+    const fullMessage = `**Prompt:** ${prompt}\n**Jawaban:** ${aiMessageClean}`;
+
+    await interaction.editReply(fullMessage.slice(0, maxLen));
   } catch (err) {
     console.error("Error panggil OpenRouter:", err);
     await interaction.editReply(
