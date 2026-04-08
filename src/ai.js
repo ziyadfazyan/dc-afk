@@ -34,7 +34,7 @@ async function handleAiCommand(interaction, { apiKey, ownerId }) {
 
   if (interaction.user.id !== ownerId) {
     await interaction.reply({
-      content: "Fitur AI ini hanya bisa dipakai oleh owner.",
+      content: "Fitur AI ini hanya bisa dipakai oleh owner bot.",
       ephemeral: true,
     });
     return;

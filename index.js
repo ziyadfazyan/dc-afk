@@ -78,9 +78,7 @@ client.once("ready", async () => {
     },
     {
       ...aiCommandDefinition,
-      // Hanya user dengan permission Administrator yang bisa lihat/pakai /ai.
-      // Kalau di server cuma kamu yang admin, praktis cuma kamu yang lihat.
-      default_member_permissions: PermissionFlagsBits.Administrator.toString(),
+      // Semua member di server bisa pakai /ai.
       dm_permission: false,
     },
   ];
